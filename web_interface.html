@@ -16,6 +16,9 @@
     <script type="text/javascript" src="web_interface_js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="web_interface_js/web_interface_rendering.js"></script>
     <script type="text/javascript" src="web_interface_js/web_interface_saving.js"></script>
+    <script type="text/javascript" src="web_interface_js/web_interface_configloader.js"></script>
+    
+    <script type="text/javascript" src="mwc2_factory_values.json"></script>
     
   </head>
   <body onload="">
@@ -36,15 +39,9 @@
             </a>
           </li>
           <li class="nav-item">
-            <a href="" onclick="if(confirm('Are you sure you want to clear all the fields?')) window.location.reload(true);" class="mynavlink-dark btn btn-warning">
+            <a id="navbtn_defaults" href="#" class="mynavlink-light btn btn-warning">
                <span class="fa fa-redo" style="padding-right:5px;"aria-hidden="true"></span>
-               <span class="hide-collapse">  Reset All Values</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="" class="mynavlink-light btn btn-danger">
-               <span class="fa fa-trash-alt" style="padding-right:5px;"aria-hidden="true"></span>
-               <span class="hide-collapse">  Apply Default Settings</span>
+               <span class="hide-collapse">  Load Default Settings</span>
             </a>
           </li>
         </ul>
@@ -64,15 +61,44 @@
                 
                 <hr />
                 
-                <div class="row">
+                
+                <div class="custom-file col-12">
+                    <div>
+                        <p id="config-file-name" class="btn" style="margin:0;">No file selected</p> 
+                    </div>
+                
+                    <div>
+                        <input type="file" class="custom-file-input" id="configFile" accept='text/plain' onchange='loadConfigFile(event)'" style="display:none;">
+                        <label class="btn btn-success" for="configFile" style="margin-bottom:0;">
+                            <span class="fa fa-file-upload" aria-hidden="true"></span> Load
+                            <span class="hide-collapse"> Config File</span>
+                        </label>
+                        
+                        <a href="" class="btn btn-danger" onclick="window.location.reload(true);" >
+                           <span class="fa fa-times" aria-hidden="true"></span> Remove
+                           <span class="hide-collapse"> Config File</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!--div class="row">
                     <div class="config-file-namebox col-12 col-md-6">
                         <p id="config-file-name" class="btn" style="margin:0;">No file selected</p> 
                     </div>
                     <div class="custom-file col-12 col-md-6">
-                        <input type="file" class="custom-file-input" id="configFile" accept='text/plain' onchange='openFile(event)'" style="display:none;">
-                        <label class="btn btn-primary" for="configFile">Choose a Config File</label>
+                        <input type="file" class="custom-file-input" id="configFile" accept='text/plain' onchange='loadConfigFile(event)'" style="display:none;">
+                        <label class="btn btn-success" for="configFile" style="margin-bottom:0;">
+                            <span class="fa fa-file-upload" aria-hidden="true"></span> Load
+                            <span class="hide-collapse"> Config File</span>
+                        </label>
+                        
+                        <a href="" class="btn btn-danger" onclick="window.location.reload(true);" >
+                           <span class="fa fa-times" aria-hidden="true"></span> Remove
+                           <span class="hide-collapse"> Config File</span>
+                        </a>
+                        
                     </div>
-                </div>
+                </div-->
                 
                 <div id="alert-success" style="display: none;" class="alert alert-success" role="alert">
                   Settings file saved successfully.
@@ -102,63 +128,22 @@
       </p>
     </footer>
   
-  
 
-    <!-- File Loader -->
-    <!-- Remember that: https://stackoverflow.com/questions/53759070/how-to-get-path-directory-from-filereader -->
-    <script>
-        var mwc2config = "";
-        var openFile = function(event) {
-            var input = event.target;
-            
-            var reader = new FileReader();
-            reader.onload = function(){                
-                mwc2config = reader.result;
-                document.getElementById("config-file-name").innerHTML = "Current file: <b>" + input.files[0].name +"</b>";
-                
-                // Remove all menu-entry and menu-page
-                var elements = document.getElementsByClassName('menu-entry');
-                while(elements.length > 0) {
-                    elements[0].parentNode.removeChild(elements[0]);
-                }
-                var pages = document.getElementsByClassName('menu-page');
-                var i = 0;
-                while(pages.length > i) {
-                    if(pages[i].id === "main-menu"){
-                        i = i + 1;
-                    } else {
-                        pages[i].parentNode.removeChild(pages[i]);
-                    }
-                }
-                // Puts back the placeholders in place
-                if( !document.getElementById("menu-entries-placeholder") ){
-                    var menu_entry_placeholder = document.createElement("div");
-                    menu_entry_placeholder.setAttribute("id", "menu-entries-placeholder");
-                    menu_entry_placeholder.setAttribute("class", "col-12");
-                    menu_entry_placeholder.innerHTML = "<hr /><i>Select a configuration file to see and edit its content</i> ";
-                    document.getElementById("main-menu").appendChild(menu_entry_placeholder); 
-                }
-                if( !document.getElementById("menu-pages-placeholder") ){          
-                    var menu_entry_placeholder = document.createElement("div");
-                    menu_entry_placeholder.setAttribute("id", "menu-pages-placeholder");
-                    menu_entry_placeholder.setAttribute("class", "col-12");
-                    menu_entry_placeholder.innerHTML = "";
-                    document.getElementById("entire-form").appendChild(menu_entry_placeholder); 
-                }
-                
-                populate_web_interface();
-            };
-            reader.readAsText(input.files[0]);
-        };
-    </script>
 
     <!-- Navbar functions -->
     <script>
+    window.config_file_json = {};
+    
     $(function () {
     
         $(document).on('click', '#navbtn_save', function(event) {
-            if( confirm("Save the current configuration?\nRemember to save the file in the web_interface folder too, or you won't see your changes") ){
-                writeConfigFile();
+            console.log(window.config_file_json);
+        
+            if(Object.keys(window.config_file_json).length === 0 && window.config_file_json.constructor === Object){ // empty object test
+                alert("You have no configuration to save. Load a configuration first.");
+                
+            } else  if( confirm("Save the current configuration?\nRemember to save the file in the web_interface folder too, or you won't see your changes") ){
+                writeConfigFile(window.config_file_json);
                 var link = document.createElement('a');
                 // Add the element to the DOM
                 document.body.appendChild(link);
@@ -170,13 +155,11 @@
         });
         
         $(document).on('click', '#navbtn_defaults', function(event) {
-            var link = document.createElement('a');
-            // Add the element to the DOM
-            document.body.appendChild(link);
-            link.setAttribute("type", "hidden"); // make it hidden if needed
-            link.download = 'mwc2config_try.json';
-            link.href = 'data:text/plain;charset=utf-u,'+encodeURIComponent(mwc2config);
-            link.click();
+            if( confirm("Restore Factory Defaults?\nRemember: you should save the configuration afterwards, or this reset won't work") ){
+                $("#config-file-name").text("Factory Defaults");
+                window.config_file_json = factory_values;
+                populate_web_interface();
+            }
         });
 
      });

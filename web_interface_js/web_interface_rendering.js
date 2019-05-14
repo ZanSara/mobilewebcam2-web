@@ -173,7 +173,7 @@ function populate_web_interface(){
         var form_field_template = document.getElementById("form-field-template").innerHTML;
         
         // Load the settings
-        config_dict = JSON.parse(mwc2config);
+        config_dict = JSON.parse(window.config_file_json);
         config_list = dict_to_sorted_list(config_dict);
         
         // Create the menu entries and build the main menu

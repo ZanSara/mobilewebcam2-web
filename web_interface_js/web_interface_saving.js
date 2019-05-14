@@ -1,8 +1,8 @@
 
-function writeConfigFile(){
+function writeConfigFile(config_file){
 
     values_to_save = $("#entire-form").serializeArray();
-    config_dict = JSON.parse(mwc2config);
+    config_dict = JSON.parse(config_file);
     
     // First of all, set the managers' fields according to the provided @type
     for(var i=0; i<values_to_save.length; i++){
@@ -42,7 +42,7 @@ function writeConfigFile(){
     }
     
     // Write back the JSON
-    mwc2config = JSON.stringify(config_dict, null, 4);
+    mwc2config = JSON.stringify(config_dict, null, 2);
     
     // Load the home page
     load("#", "Control Panel")
